@@ -1,4 +1,4 @@
-% householdIncomeDistribution
+%% householdIncomeDistribution
 %
 % Data taken from US Census:
 %
@@ -12,20 +12,26 @@ clear
 
 % Instantiate a plotlab object
 plotlabOBJ = plotlab();
-%    
+
+% Create a figure
+figHandle = figure();
+
 % Apply the default plotlab recipe 
 % overriding just the figure size
 plotlabOBJ.applyRecipe(...
-  'figureWidthInches', 8, ...
+  'figureWidthInches', 10, ...
   'figureHeightInches', 6);
 
 % 2018 value, US census
 medianHouseholdIncome = 63179;
 
-% Load "hinc06.xls"
+% Load "hinc06.xls". Silence the typical warnings
+warnState = warning();
+warning('off','MATLAB:table:ModifiedAndSavedVarnames');
 filePathBits = strsplit(fileparts(mfilename('fullpath')),filesep);
 tableName = fullfile(filesep,filePathBits{1:end-1},'data','hinc06.xls');
 table = readtable(tableName);
+warning(warnState);
 
 % Grab the parts of the table we want
 incomeLabels = table{10:end-1,1};
