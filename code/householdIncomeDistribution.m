@@ -16,45 +16,50 @@ plotlabOBJ = plotlab();
 % Apply the default plotlab recipe 
 % overriding just the figure size
 plotlabOBJ.applyRecipe(...
-  'figureWidthInches', 10, ...
-  'figureHeightInches', 4);
+  'figureWidthInches', 8, ...
+  'figureHeightInches', 6);
 
 % 2018 value, US census
 medianHouseholdIncome = 63179;
 
-% 2018 data, "all races"
-proportionHouseholds = [0.033310261	0.025952916	0.042853032	0.04489069	0.044112958	0.042534162	0.045279556	0.042028636	0.040403176	0.03763445	0.041219795	0.034352421	0.03580678	0.031101502	0.029514929	0.030720413	0.026046244	0.023829708	0.024125246	0.020073262	0.022289798	0.019046656	0.018027827	0.015329097	0.015585749	0.013843629	0.013050343	0.011090458	0.01099713	0.010234953	0.011603761	0.007606219	0.009029468	0.007544	0.007038474	0.006494062	0.006004091	0.005335241	0.004541955	0.004394186	0.035557906	0.049580414];
-nVals = length(proportionHouseholds);
+% Load "hinc06.xls"
+filePathBits = strsplit(fileparts(mfilename('fullpath')),filesep);
+tableName = fullfile(filesep,filePathBits{1:end-1},'data','hinc06.xls');
+table = readtable(tableName);
 
-% Create a blank cell array
-totalHouseholdIncomelabels = cell(1,nVals);
-totalHouseholdIncomelabels(:)={''};
-
-% Create the currency support labels
-for ii=1:nVals
-    totalHouseholdIncomelabels{ii} = [cur2str(5000*(ii-1)) ' - ' cur2str(5000*(ii))];
-end
-
-% Special case the end values
-totalHouseholdIncomelabels{1} = 'Less than $5000';
-totalHouseholdIncomelabels{end-1} = '$200,000 - $250,000';
-totalHouseholdIncomelabels{end} = '> $250,000';
-
+% Grab the parts of the table we want
+incomeLabels = table{10:end-1,1};
+nHouseholds = str2double(table{9,2});
+percentHouseholds = 100 * str2double(table{10:end-1,2}) / nHouseholds;
+sourceStr = table{4,1};
+nVals = length(incomeLabels);
 
 % Plot a histogram by hand    
-bar(1:nVals,100*proportionHouseholds);
+bar(1:nVals,percentHouseholds);
 xTickPositions = [1:4:nVals-3,nVals-1,nVals];
 xticks(xTickPositions);
-set(gca,'xticklabel',totalHouseholdIncomelabels(xTickPositions));
+set(gca,'xticklabel',incomeLabels(xTickPositions));
 xtickangle(45);
-ylabel('% households');
-
+ylabel('% Households');
+ylim([0 6]);
 g=gca; 
 set(g,'TickDir','out');
 box off
+grid off
+
+% Add a labeled line for median household income
+hold on
+binWidth = 5000;
+xPos = medianHouseholdIncome/binWidth;
+plot([xPos xPos],[0 5.5],'-b');
+text(xPos+0.5,5.5,['<-- median ' cur2str(medianHouseholdIncome)],'FontSize',14)
+
+% Add title
+str = {['\fontsize{16}', 'Distribution of annual household income in the United States'];...
+        ['\fontsize{8}\color{blue} ' sourceStr{1} ]};
+title(str);
 
 
-foo=1;
 
 function S = cur2str(N)
 S = sprintf('$%.0f', N);
